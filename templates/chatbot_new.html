@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carbon Capture Research Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: #f7f7f8;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #202123;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #4d4d4f;
+        }
+        
+        .new-chat-btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid #4d4d4f;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .new-chat-btn:hover {
+            background: #2d2d30;
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px;
+        }
+        
+        .sidebar-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+        
+        .sidebar-item:hover {
+            background: #2d2d30;
+        }
+        
+        .sidebar-item.active {
+            background: #343541;
+        }
+        
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid #4d4d4f;
+        }
+        
+        .knowledge-graph-btn {
+            width: 100%;
+            background: linear-gradient(90deg, #10a37f, #1a7f64);
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .knowledge-graph-btn:hover {
+            background: linear-gradient(90deg, #0d8f72, #166b57);
+            transform: translateY(-1px);
+        }
+        
+        /* Main Chat Area */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+        
+        .chat-header {
+            background: white;
+            border-bottom: 1px solid #e5e5e5;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chat-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #202123;
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #202123;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+        }
+        
+        .message-wrapper {
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .message {
+            max-width: 48rem;
+            margin: 0 auto;
+            padding: 24px;
+            display: flex;
+            gap: 16px;
+        }
+        
+        .message.user {
+            background: #f7f7f8;
+        }
+        
+        .message.assistant {
+            background: white;
+        }
+        
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .message.user .message-avatar {
+            background: #10a37f;
+            color: white;
+        }
+        
+        .message.assistant .message-avatar {
+            background: #19c37d;
+            color: white;
+        }
+        
+        .message-content {
+            flex: 1;
+            line-height: 1.6;
+            color: #374151;
+            word-wrap: break-word;
+        }
+        
+        .message-content h1, .message-content h2, .message-content h3 {
+            margin: 16px 0 8px 0;
+            color: #202123;
+        }
+        
+        .message-content p {
+            margin: 8px 0;
+        }
+        
+        .message-content ul, .message-content ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+        
+        .message-content code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', 'Source Code Pro', monospace;
+            font-size: 0.875em;
+        }
+        
+        .message-content pre {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+            overflow-x: auto;
+        }
+        
+        .message-content pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .chat-input-container {
+            background: white;
+            border-top: 1px solid #e5e5e5;
+            padding: 20px 24px;
+        }
+        
+        .chat-input-wrapper {
+            max-width: 48rem;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .chat-input {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            padding: 12px 50px 12px 16px;
+            font-size: 16px;
+            outline: none;
+            resize: none;
+            min-height: 24px;
+            max-height: 200px;
+            line-height: 1.5;
+            background: white;
+            transition: all 0.2s;
+        }
+        
+        .chat-input:focus {
+            border-color: #10a37f;
+            box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.1);
+        }
+        
+        .send-button {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #10a37f;
+            border: none;
+            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .send-button:hover:not(:disabled) {
+            background: #0d8f72;
+        }
+        
+        .send-button:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 24px;
+            max-width: 48rem;
+            margin: 0 auto;
+        }
+        
+        .typing-content {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .typing-avatar {
+            width: 32px;
+            height: 32px;
+            background: #19c37d;
+            color: white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: #10a37f;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+            30% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .welcome-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #374151;
+            padding: 40px;
+        }
+        
+        .welcome-screen h1 {
+            font-size: 32px;
+            font-weight: 600;
+            color: #202123;
+            margin-bottom: 16px;
+        }
+        
+        .welcome-screen p {
+            font-size: 16px;
+            margin-bottom: 32px;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+        
+        .example-prompts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .example-prompt {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .example-prompt:hover {
+            border-color: #10a37f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .example-prompt h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #202123;
+            margin-bottom: 8px;
+        }
+        
+        .example-prompt p {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 0;
+            line-height: 1.4;
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 16px 24px;
+            font-size: 14px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -260px;
+                top: 0;
+                height: 100vh;
+                z-index: 1000;
+            }
+            
+            .sidebar.open {
+                left: 0;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .chat-main {
+                width: 100%;
+            }
+            
+            .message {
+                padding: 16px;
+            }
+            
+            .example-prompts {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .sidebar-overlay.show {
+            display: block;
+        }
+        
+        /* Response Type Buttons */
+        .response-type-buttons {
+            display: flex;
+            gap: 6px;
+            flex-direction: column;
+        }
+        
+        .response-type-btn {
+            background: transparent;
+            border: 1px solid #4d4d4f;
+            color: #9ca3af;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .response-type-btn:hover {
+            background: #2d2d30;
+            color: white;
+        }
+        
+        .response-type-btn.active {
+            background: #10a37f;
+            border-color: #10a37f;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <button class="new-chat-btn" onclick="startNewChat()">
+                <span>+</span>
+                New chat
+            </button>
+        </div>
+        
+        <div class="sidebar-nav">
+            <!-- Response type controls -->
+            <div style="padding: 0 16px; margin-bottom: 20px;">
+                <h4 style="color: #9ca3af; font-size: 12px; text-transform: uppercase; margin-bottom: 10px; font-weight: 600;">Response Type</h4>
+                <div class="response-type-buttons">
+                    <button class="response-type-btn active" data-type="auto" onclick="setResponseType('auto')">Auto</button>
+                    <button class="response-type-btn" data-type="short" onclick="setResponseType('short')">Short</button>
+                    <button class="response-type-btn" data-type="long" onclick="setResponseType('long')">Long</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar-footer">
+            <button class="knowledge-graph-btn" onclick="openKnowledgeGraph()">
+                <span>🕸️</span>
+                View Knowledge Graph
+            </button>
+        </div>
+    </div>
+    
+    <!-- Main Chat Area -->
+    <div class="chat-main">
+        <div class="chat-header">
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <div class="chat-title">Carbon Capture Research Assistant</div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <!-- Welcome Screen -->
+            <div class="welcome-screen" id="welcomeScreen">
+                <h1>Carbon Capture Research Assistant</h1>
+                <p>Ask questions about carbon capture materials, processes, and research findings. I'll search through your knowledge base of scientific papers and provide evidence-based answers.</p>
+                
+                <div class="example-prompts">
+                    <div class="example-prompt" onclick="askQuestion('What are the most effective carbon capture materials?')">
+                        <h3>🧪 Material Research</h3>
+                        <p>What are the most effective carbon capture materials?</p>
+                    </div>
+                    <div class="example-prompt" onclick="askQuestion('How do graphene-based adsorbents work for CO2 capture?')">
+                        <h3>🔬 Process Analysis</h3>
+                        <p>How do graphene-based adsorbents work for CO2 capture?</p>
+                    </div>
+                    <div class="example-prompt" onclick="askQuestion('What are the key properties for CO2 selectivity?')">
+                        <h3>📊 Property Analysis</h3>
+                        <p>What are the key properties for CO2 selectivity?</p>
+                    </div>
+                    <div class="example-prompt" onclick="askQuestion('Compare different synthesis methods for carbon capture materials')">
+                        <h3>⚖️ Comparative Analysis</h3>
+                        <p>Compare different synthesis methods for carbon capture materials</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Typing Indicator -->
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-content">
+                <div class="typing-avatar">KGB</div>
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <textarea class="chat-input" id="chatInput" placeholder="Ask about carbon capture research..." rows="1"></textarea>
+                <button class="send-button" id="sendButton" onclick="sendMessage()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let conversationHistory = [];
+        let currentResponseType = 'auto';
+        
+        // Response type management
+        function setResponseType(type) {
+            currentResponseType = type;
+            
+            // Update button states
+            document.querySelectorAll('.response-type-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-type="${type}"]`).classList.add('active');
+        }
+        
+        // Mobile menu toggle
+        document.getElementById('menuToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        });
+        
+        // Close sidebar when clicking overlay
+        document.getElementById('sidebarOverlay').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+        });
+        
+        // Auto-resize textarea
+        const chatInput = document.getElementById('chatInput');
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+        });
+        
+        // Send message on Enter (but allow Shift+Enter for new lines)
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        function startNewChat() {
+            conversationHistory = [];
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="welcome-screen" id="welcomeScreen">
+                    <h1>Carbon Capture Research Assistant</h1>
+                    <p>Ask questions about carbon capture materials, processes, and research findings. I'll search through your knowledge base of scientific papers and provide evidence-based answers.</p>
+                    
+                    <div class="example-prompts">
+                        <div class="example-prompt" onclick="askQuestion('What are the most effective carbon capture materials?')">
+                            <h3>🧪 Material Research</h3>
+                            <p>What are the most effective carbon capture materials?</p>
+                        </div>
+                        <div class="example-prompt" onclick="askQuestion('How do graphene-based adsorbents work for CO2 capture?')">
+                            <h3>🔬 Process Analysis</h3>
+                            <p>How do graphene-based adsorbents work for CO2 capture?</p>
+                        </div>
+                        <div class="example-prompt" onclick="askQuestion('What are the key properties for CO2 selectivity?')">
+                            <h3>📊 Property Analysis</h3>
+                            <p>What are the key properties for CO2 selectivity?</p>
+                        </div>
+                        <div class="example-prompt" onclick="askQuestion('Compare different synthesis methods for carbon capture materials')">
+                            <h3>⚖️ Comparative Analysis</h3>
+                            <p>Compare different synthesis methods for carbon capture materials</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function openKnowledgeGraph() {
+            // Open knowledge graph in a new window/tab
+            window.open('/static/knowledge_graph_visualization.html', '_blank', 'width=1200,height=800');
+        }
+        
+        function askQuestion(question) {
+            document.getElementById('chatInput').value = question;
+            sendMessage();
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Hide welcome screen
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            if (welcomeScreen) {
+                welcomeScreen.style.display = 'none';
+            }
+            
+            // Add user message
+            addMessage(message, 'user');
+            
+            // Clear input
+            input.value = '';
+            input.style.height = 'auto';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Disable send button
+            document.getElementById('sendButton').disabled = true;
+            
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        history: conversationHistory,
+                        response_type: currentResponseType
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Add assistant response
+                addMessage(data.response, 'assistant');
+                
+                // Update conversation history
+                conversationHistory.push({
+                    user: message,
+                    assistant: data.response
+                });
+                
+            } catch (error) {
+                console.error('Error:', error);
+                addErrorMessage('Sorry, there was an error processing your request. Please try again.');
+            } finally {
+                // Hide typing indicator
+                hideTypingIndicator();
+                
+                // Enable send button
+                document.getElementById('sendButton').disabled = false;
+                
+                // Focus input
+                input.focus();
+            }
+        }
+        
+        function addMessage(content, type) {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = 'message-wrapper';
+            
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = type === 'user' ? 'You' : 'KGB';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            
+            // Format content (basic markdown support)
+            let formattedContent = content
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code>$1</code>')
+                .replace(/\n/g, '<br>');
+            
+            messageContent.innerHTML = formattedContent;
+            
+            message.appendChild(avatar);
+            message.appendChild(messageContent);
+            messageWrapper.appendChild(message);
+            
+            messagesContainer.appendChild(messageWrapper);
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function addErrorMessage(message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            messagesContainer.appendChild(errorDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'block';
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
