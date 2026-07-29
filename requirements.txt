@@ -1,0 +1,13 @@
+PyPDF2
+google-generativeai
+networkx
+rouge-score
+nltk
+sentence-transformers
+python-dotenv
+tqdm
+scikit-learn
+numpy
+grpcio
+grpcio-status
+grpc-google-iam-v1

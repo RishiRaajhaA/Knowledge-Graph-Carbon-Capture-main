@@ -1,0 +1,20 @@
+# RAG Chatbot Requirements - Simplified
+# Install with: pip install -r chatbot_requirements.txt
+
+# Web framework
+Flask
+Werkzeug
+
+# NLP and ML (latest versions without strict version pinning)
+sentence-transformers
+numpy
+pandas
+
+# Google Gemini API
+google-generativeai
+
+# Environment variables
+python-dotenv
+
+# Use existing scikit-learn if available, otherwise install latest
+scikit-learn
